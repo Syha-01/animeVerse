@@ -4,10 +4,11 @@ import { Image } from '@/components/ui/image';
 import { ScrollView } from '@/components/ui/scroll-view';
 import { Text } from '@/components/ui/text';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator } from 'react-native';
+// Import Linking to open external URLs and TouchableOpacity for a pressable component
+import { ActivityIndicator, Linking, TouchableOpacity } from 'react-native';
 
 // Defines the TypeScript interface for an Anime object based on the Jikan API response.
-// This interface is simplified to include only the fields needed for the component.
+// This interface is updated to include the trailer information.
 interface Anime {
     mal_id: number;
     title: string;
@@ -15,6 +16,10 @@ interface Anime {
         jpg: {
             image_url: string;
         };
+    };
+    // Add the trailer property to the interface
+    trailer: {
+        url: string | null; // The trailer URL can sometimes be null
     };
 }
 
@@ -29,7 +34,7 @@ export default function Index() {
         setLoading(true);
         try {
             // Add the &limit=10 parameter to the URL
-            const response = await fetch('https://api.jikan.moe/v4/top/anime?sfw&limit=10');
+            const response = await fetch('https://api.jikan.moe/v4/top/anime?filter=bypopularity');
             if (!response.ok) {
                 throw new Error('Failed to fetch data from the API');
             }
@@ -77,9 +82,18 @@ export default function Index() {
                             alt={item.title}
                             className="w-40 h-56 rounded-lg"
                         />
-                        <Text className="text-black text-center mt-2" numberOfLines={2}>
+                        <Text className="text-black text-center mt-2 h-10" numberOfLines={2}>
                             {item.title}
                         </Text>
+
+                        {/* Check if a trailer URL exists before rendering the link */}
+                        {item.trailer?.url && (
+                            <TouchableOpacity onPress={() => Linking.openURL(item.trailer.url!)}>
+                                <Text className="text-blue-400 text-center mt-1 underline">
+                                    View Trailer
+                                </Text>
+                            </TouchableOpacity>
+                        )}
                     </Box>
                 ))}
             </ScrollView>
