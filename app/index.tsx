@@ -1,107 +1,88 @@
 import { Box } from '@/components/ui/box';
 import { Heading } from '@/components/ui/heading';
-import { HStack } from '@/components/ui/hstack';
 import { Image } from '@/components/ui/image';
 import { ScrollView } from '@/components/ui/scroll-view';
 import { Text } from '@/components/ui/text';
-import React, { useCallback, useEffect, useState } from 'react';
-import { RefreshControl } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator } from 'react-native';
 
-// The Card is a custom component you can build for reusability
-const AnimeCard = ({ title, imageUri }: { title: string; imageUri: string }) => {
-    return (
-        <Box className="w-40 m-2 rounded-lg">
-            <Box className="overflow-hidden rounded-lg">
-                <Image
-                    className="w-full h-48"
-                    alt={title}
-                    source={{ uri: imageUri }}
-                />
-                <Box className="p-3 rounded-b-lg bg-primary-500">
-                    <Text className="font-bold text-white text-md">
-                        {title}
-                    </Text>
-                </Box>
-            </Box>
-        </Box>
-    );
-};
-
-const WaifuList = () => {
-    const [waifus, setWaifus] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
-    const [error, setError] = useState<{ message: string } | null>(null);
-
-    const fetchWaifus = useCallback(() => {
-        fetch('https://placewaifu.com/images')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Shuffle the array to get a new random order on refresh
-                const shuffledData = data.sort(() => 0.5 - Math.random()).slice(0, 10);
-                setWaifus(shuffledData);
-            })
-            .catch(error => {
-                setError(error);
-            })
-            .finally(() => {
-                setLoading(false);
-                setRefreshing(false);
-            });
-    }, []);
-
-    useEffect(() => {
-        fetchWaifus();
-    }, [fetchWaifus]);
-
-    const onRefresh = useCallback(() => {
-        setRefreshing(true);
-        fetchWaifus();
-    }, [fetchWaifus]);
-
-    if (loading) {
-        return <Text className="py-4 text-center text-white">Loading...</Text>;
-    }
-
-    if (error) {
-        return <Text className="py-4 text-center text-white">Error: {error.message}</Text>;
-    }
-
-    return (
-        <Box className="flex-1 py-4 bg-background-dark-950">
-            <Heading className="px-4 mb-4 text-2xl text-black">
-                Waifus
-            </Heading>
-            <ScrollView
-                refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff" />
-                }
-            >
-                <HStack space="md" reversed={false}>
-                    <Box className="flex-row flex-wrap justify-center">
-                        {waifus.map((waifu: any) => (
-                            <AnimeCard
-                                key={waifu.name}
-                                title={waifu.name}
-                                imageUri={`data:image/${waifu.format};base64,${waifu.data}`}
-                            />
-                        ))}
-                    </Box>
-                </HStack>
-            </ScrollView>
-        </Box>
-    );
-};
+// Defines the TypeScript interface for an Anime object based on the Jikan API response.
+// This interface is simplified to include only the fields needed for the component.
+interface Anime {
+    mal_id: number;
+    title: string;
+    images: {
+        jpg: {
+            image_url: string;
+        };
+    };
+}
 
 export default function Index() {
+    // State variables with TypeScript types
+    const [anime, setAnime] = useState<Anime[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<Error | null>(null);
+
+    // Function to fetch the top 10 anime
+    const fetchAnime = async () => {
+        setLoading(true);
+        try {
+            // Add the &limit=10 parameter to the URL
+            const response = await fetch('https://api.jikan.moe/v4/top/anime?sfw&limit=10');
+            if (!response.ok) {
+                throw new Error('Failed to fetch data from the API');
+            }
+            const data = await response.json();
+            setAnime(data.data);
+        } catch (error: any) {
+            setError(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // useEffect to fetch data when the component mounts
+    useEffect(() => {
+        fetchAnime();
+    }, []);
+
+    // Display a loading indicator while fetching data
+    if (loading) {
+        return (
+            <Box className="flex-1 justify-center items-center bg-background-dark-950">
+                <ActivityIndicator size="large" color="#ffffff" />
+            </Box>
+        );
+    }
+
+    // Display an error message if the fetch fails
+    if (error) {
+        return (
+            <Box className="flex-1 justify-center items-center bg-background-dark-950 p-4">
+                <Text className="text-black text-center">Error: {error.message}</Text>
+            </Box>
+        );
+    }
+
+    // Render the horizontal list of anime cards
     return (
-        <Box className="flex-1 bg-background-dark-950">
-            <WaifuList />
+        <Box className="flex-1 bg-background-dark-950 py-6">
+            <Heading className="text-black text-2xl mb-4 px-4">Top Anime</Heading>
+            <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} className="pl-4">
+                {anime.map((item) => (
+                    <Box key={item.mal_id} className="w-40 mr-4 items-center">
+                        <Image
+                            source={{ uri: item.images.jpg.image_url }}
+                            alt={item.title}
+                            className="w-40 h-56 rounded-lg"
+                        />
+                        <Text className="text-black text-center mt-2" numberOfLines={2}>
+                            {item.title}
+                        </Text>
+                    </Box>
+                ))}
+            </ScrollView>
         </Box>
     );
 }
