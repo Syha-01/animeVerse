@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react';
 // Import Linking to open external URLs and TouchableOpacity for a pressable component
 import { ActivityIndicator, Linking, TouchableOpacity } from 'react-native';
 
+
 // Defines the TypeScript interface for an Anime object based on the Jikan API response.
 // This interface is updated to include the trailer information.
 interface Anime {
@@ -55,7 +56,7 @@ export default function Index() {
     // Display a loading indicator while fetching data
     if (loading) {
         return (
-            <Box className="flex-1 justify-center items-center bg-background-dark-950">
+            <Box className="items-center justify-center flex-1 bg-background-dark-950">
                 <ActivityIndicator size="large" color="#ffffff" />
             </Box>
         );
@@ -64,32 +65,32 @@ export default function Index() {
     // Display an error message if the fetch fails
     if (error) {
         return (
-            <Box className="flex-1 justify-center items-center bg-background-dark-950 p-4">
-                <Text className="text-black text-center">Error: {error.message}</Text>
+            <Box className="items-center justify-center flex-1 p-4 bg-background-dark-950">
+                <Text className="text-center text-black">Error: {error.message}</Text>
             </Box>
         );
     }
 
     // Render the horizontal list of anime cards
     return (
-        <Box className="flex-1 bg-background-dark-950 py-6">
-            <Heading className="text-black text-2xl mb-4 px-4">Top Anime</Heading>
+        <Box className="flex-1 py-6 bg-background-dark-950">
+            <Heading className="px-4 mb-4 text-2xl text-black">Top Anime</Heading>
             <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} className="pl-4">
                 {anime.map((item) => (
-                    <Box key={item.mal_id} className="w-40 mr-4 items-center">
+                    <Box key={item.mal_id} className="items-center w-40 mr-4">
                         <Image
                             source={{ uri: item.images.jpg.image_url }}
                             alt={item.title}
                             className="w-40 h-56 rounded-lg"
                         />
-                        <Text className="text-black text-center mt-2 h-10" numberOfLines={2}>
+                        <Text className="h-10 mt-2 text-center text-black" numberOfLines={2}>
                             {item.title}
                         </Text>
 
                         {/* Check if a trailer URL exists before rendering the link */}
                         {item.trailer?.url && (
                             <TouchableOpacity onPress={() => Linking.openURL(item.trailer.url!)}>
-                                <Text className="text-blue-400 text-center mt-1 underline">
+                                <Text className="mt-1 text-center text-blue-400 underline">
                                     View Trailer
                                 </Text>
                             </TouchableOpacity>
