@@ -1,5 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { Tabs } from "expo-router";
+import { BlurView } from 'expo-blur';
 
 import '@/global.css';
 
@@ -8,13 +9,24 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        tabBarBackground: () => (
+          <BlurView
+            tint="dark"
+            intensity={100}
+            style={{
+              flex: 1,
+              backgroundColor: 'rgba(18, 18, 18, 0.8)',
+            }}
+          />
+        ),
         tabBarStyle: {
-          backgroundColor: 'rgb(18, 18, 18)', // background-dark-950
-          borderTopColor: 'rgb(65, 65, 65)', // outline-800
+          backgroundColor: 'transparent',
+          borderTopColor: 'rgba(255, 255, 255, 0.1)',
           borderTopWidth: 1,
-           paddingTop: 8,
+          paddingTop: 8,
           paddingBottom: 24,
           height: 88,
+          position: 'absolute',
         },
         tabBarActiveTintColor: '#38e07b', // primary-500
         tabBarInactiveTintColor: 'rgb(140, 140, 140)', // typography-400

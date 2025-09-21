@@ -7,7 +7,7 @@ import '@/global.css';
 
 export default function RootLayout() {
   return (
-    <GluestackUIProvider>
+    <GluestackUIProvider mode="dark">
       <SafeAreaProvider>
         <View style={{ paddingTop: 40, flex: 1, backgroundColor: 'rgb(18,18,18)' }}>
           <Stack

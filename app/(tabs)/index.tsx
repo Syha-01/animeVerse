@@ -56,7 +56,7 @@ export default function Index() {
     // Display a loading indicator while fetching data
     if (loading) {
         return (
-            <Box className="items-center justify-center flex-1 bg-background-dark-950">
+            <Box className="items-center justify-center flex-1 bg-background-0">
                 <ActivityIndicator size="large" color="#ffffff" />
             </Box>
         );
@@ -65,16 +65,16 @@ export default function Index() {
     // Display an error message if the fetch fails
     if (error) {
         return (
-            <Box className="items-center justify-center flex-1 p-4 bg-background-dark-950">
-                <Text className="text-center text-black">Error: {error.message}</Text>
+            <Box className="items-center justify-center flex-1 p-4 bg-background-0">
+                <Text className="text-center text-white">Error: {error.message}</Text>
             </Box>
         );
     }
 
     // Render the horizontal list of anime cards
     return (
-        <Box className="flex-1 py-6 bg-background-dark-950">
-            <Heading className="px-4 mb-4 text-2xl text-black">Top Anime</Heading>
+        <Box className="flex-1 py-6 bg-background-0">
+            <Heading className="px-4 mb-4 text-2xl text-white">Top Anime</Heading>
             <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} className="pl-4">
                 {anime.map((item) => (
                     <Box key={item.mal_id} className="items-center w-40 mr-4">
@@ -83,7 +83,7 @@ export default function Index() {
                             alt={item.title}
                             className="w-40 h-56 rounded-lg"
                         />
-                        <Text className="h-10 mt-2 text-center text-black" numberOfLines={2}>
+                        <Text className="h-10 mt-2 text-center text-white" numberOfLines={2}>
                             {item.title}
                         </Text>
 
