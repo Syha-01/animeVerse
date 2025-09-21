@@ -7,13 +7,14 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
+        headerShown: false,
         tabBarStyle: {
           backgroundColor: 'rgb(18, 18, 18)', // background-dark-950
           borderTopColor: 'rgb(65, 65, 65)', // outline-800
           borderTopWidth: 1,
-          paddingTop: 8, // pt-2
-          paddingBottom: 8, // pb-2
-          height: 88, // Increased height for padding
+           paddingTop: 8,
+          paddingBottom: 24,
+          height: 88,
         },
         tabBarActiveTintColor: '#38e07b', // primary-500
         tabBarInactiveTintColor: 'rgb(140, 140, 140)', // typography-400
