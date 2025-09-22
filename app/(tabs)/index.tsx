@@ -8,6 +8,8 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, TouchableOpacity } from 'react-native';
 
 import EvilIcons from '@expo/vector-icons/EvilIcons';
+import Feather from '@expo/vector-icons/Feather';
+
 // Defines the TypeScript interface for an Anime object based on the Jikan API response.
 // This interface is updated to include the trailer information.
 interface Anime {
@@ -22,6 +24,7 @@ interface Anime {
     trailer: {
         url: string | null; // The trailer URL can sometimes be null
     };
+    score: number;
 }
 
 export default function Index() {
@@ -128,7 +131,9 @@ export default function Index() {
                     </TouchableOpacity>
                 </Box>
                 {randomAnimeLoading ? (
-                    <ActivityIndicator size="large" color="white" />
+                    <Box className="items-center justify-center flex-1 bg-background-0">
+                <ActivityIndicator size="large" color="#ffffff" />
+            </Box>
                 ) : (
                     <Box className="px-4">
                         {randomAnime.map((item) => (
@@ -141,6 +146,16 @@ export default function Index() {
                                 <Text className="flex-1 ml-4 text-white" numberOfLines={2}>
                                     {item.title}
                                 </Text>
+                                <Box className="flex-row items-center mr-4">
+                                    {item.score ? (
+                                        <>
+                                            <Feather name="star" size={16} color="yellow" />
+                                            <Text className="ml-1 text-white">{item.score}</Text>
+                                        </>
+                                    ) : (
+                                        <Text className="text-white">N/A</Text>
+                                    )}
+                                </Box>
                             </Box>
                         ))}
                         <Box className='h-24' />
