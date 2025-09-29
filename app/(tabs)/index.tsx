@@ -5,8 +5,9 @@ import { ScrollView } from '@/components/ui/scroll-view';
 import { Text } from '@/components/ui/text';
 import React, { useEffect, useState } from 'react';
 // Import Linking to open external URLs and TouchableOpacity for a pressable component
-import { ActivityIndicator, Linking, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, TouchableOpacity } from 'react-native';
 
+import Anime from '@/components/myComponents/Anime';
 import EvilIcons from '@expo/vector-icons/EvilIcons';
 import Feather from '@expo/vector-icons/Feather';
 
@@ -19,10 +20,6 @@ interface Anime {
         jpg: {
             image_url: string;
         };
-    };
-    // Add the trailer property to the interface
-    trailer: {
-        url: string | null; // The trailer URL can sometimes be null
     };
     score: number;
 }
@@ -101,25 +98,7 @@ export default function Index() {
                 <Heading className="px-4 mb-4 text-2xl text-white">Top Anime</Heading>
                 <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} className="pl-4">
                     {anime.map((item) => (
-                        <Box key={item.mal_id} className="items-center w-40 mr-4">
-                            <Image
-                                source={{ uri: item.images.jpg.image_url }}
-                                alt={item.title}
-                                className="w-40 h-56 rounded-lg"
-                            />
-                            <Text className="h-10 mt-2 text-center text-white" numberOfLines={2}>
-                                {item.title}
-                            </Text>
-
-                            {/* Check if a trailer URL exists before rendering the link */}
-                            {item.trailer?.url && (
-                                <TouchableOpacity onPress={() => Linking.openURL(item.trailer.url!)}>
-                                    <Text className="mt-1 text-center text-blue-400 underline">
-                                        View Trailer
-                                    </Text>
-                                </TouchableOpacity>
-                            )}
-                        </Box>
+                        <Anime item={item} key={item.mal_id} />
                     ))}
                 </ScrollView>
             </Box>
