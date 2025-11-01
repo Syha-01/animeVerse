@@ -72,15 +72,18 @@ const AnimeDetails = () => {
           <Image
             source={{ uri: anime.images.jpg.image_url }}
             alt={anime.title}
-            className="w-full mt-4 rounded-lg h-96"
+            className="w-full mt-4 rounded-lg aspect-[2/3]"
           />
           <Text className="mt-4 text-white">{anime.synopsis}</Text>
           {anime.trailer?.youtube_id && (
-            <YoutubePlayer
-              height={300}
-              play={true}
-              videoId={anime.trailer.youtube_id}
-            />
+            <Box className="mt-4">
+              <Heading className="mb-2 text-xl text-white">Trailer</Heading>
+              <YoutubePlayer
+                height={220}
+                play={false}
+                videoId={anime.trailer.youtube_id}
+              />
+            </Box>
           )}
         </Box>
       )}

@@ -5,11 +5,12 @@ import { ScrollView } from '@/components/ui/scroll-view';
 import { Text } from '@/components/ui/text';
 import React, { useEffect, useState } from 'react';
 // Import Linking to open external URLs and TouchableOpacity for a pressable component
-import { ActivityIndicator, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Pressable, TouchableOpacity } from 'react-native';
 
 import Anime from '@/components/myComponents/Anime';
 import EvilIcons from '@expo/vector-icons/EvilIcons';
 import Feather from '@expo/vector-icons/Feather';
+import { Link } from 'expo-router';
 
 // Defines the TypeScript interface for an Anime object based on the Jikan API response.
 // This interface is updated to include the trailer information.
@@ -116,26 +117,30 @@ export default function Index() {
                 ) : (
                     <Box className="px-4">
                         {randomAnime.map((item) => (
-                            <Box key={item.mal_id} className="flex-row items-center mb-4">
-                                <Image
-                                    source={{ uri: item.images.jpg.image_url }}
-                                    alt={item.title}
-                                    className="w-20 rounded-lg h-28"
-                                />
-                                <Text className="flex-1 ml-4 text-white" numberOfLines={2}>
-                                    {item.title}
-                                </Text>
-                                <Box className="flex-row items-center mr-4">
-                                    {item.score ? (
-                                        <>
-                                            <Feather name="star" size={16} color="yellow" />
-                                            <Text className="ml-1 text-white">{item.score}</Text>
-                                        </>
-                                    ) : (
-                                        <Text className="text-white">N/A</Text>
-                                    )}
-                                </Box>
-                            </Box>
+                            <Link href={`/anime/${item.mal_id}`} asChild key={item.mal_id}>
+                                <Pressable>
+                                    <Box className="flex-row items-center mb-4">
+                                        <Image
+                                            source={{ uri: item.images.jpg.image_url }}
+                                            alt={item.title}
+                                            className="w-20 rounded-lg h-28"
+                                        />
+                                        <Text className="flex-1 ml-4 text-white" numberOfLines={2}>
+                                            {item.title}
+                                        </Text>
+                                        <Box className="flex-row items-center mr-4">
+                                            {item.score ? (
+                                                <>
+                                                    <Feather name="star" size={16} color="yellow" />
+                                                    <Text className="ml-1 text-white">{item.score}</Text>
+                                                </>
+                                            ) : (
+                                                <Text className="text-white">N/A</Text>
+                                            )}
+                                        </Box>
+                                    </Box>
+                                </Pressable>
+                            </Link>
                         ))}
                         <Box className='h-24' />
                     </Box>
