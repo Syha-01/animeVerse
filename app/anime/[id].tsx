@@ -32,9 +32,16 @@ interface Anime {
   scored_by: number;
 }
 
+interface Episode {
+  mal_id: number;
+  title: string;
+  url: string | null;
+}
+
 const AnimeDetails = () => {
   const { id } = useLocalSearchParams();
   const [anime, setAnime] = useState<Anime | null>(null);
+  const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
@@ -42,12 +49,20 @@ const AnimeDetails = () => {
   useEffect(() => {
     const fetchAnimeDetails = async () => {
       try {
-        const response = await fetch(`https://api.jikan.moe/v4/anime/${id}`);
-        if (!response.ok) {
+        const [animeResponse, episodesResponse] = await Promise.all([
+          fetch(`https://api.jikan.moe/v4/anime/${id}`),
+          fetch(`https://api.jikan.moe/v4/anime/${id}/episodes`),
+        ]);
+
+        if (!animeResponse.ok || !episodesResponse.ok) {
           throw new Error('Failed to fetch data from the API');
         }
-        const data = await response.json();
-        setAnime(data.data);
+
+        const animeData = await animeResponse.json();
+        const episodesData = await episodesResponse.json();
+
+        setAnime(animeData.data);
+        setEpisodes(episodesData.data);
       } catch (error: any) {
         setError(error);
       } finally {
@@ -84,6 +99,7 @@ const AnimeDetails = () => {
   }
 
   const videoId = anime?.trailer ? getVideoId(anime.trailer) : null;
+  const episodeBoxWidth = (width - 32 - 32) / 5; // Screen width - padding (16*2) - gaps (approx) / 5
 
   return (
     <ScrollView className="flex-1 bg-[#0b0b0b]" contentContainerStyle={{ paddingBottom: 40 }}>
@@ -140,6 +156,23 @@ const AnimeDetails = () => {
                     play={false}
                     videoId={videoId}
                   />
+                </Box>
+              </Box>
+            )}
+
+            {episodes.length > 0 && (
+              <Box className="mt-8">
+                <Heading className="mb-4 text-xl text-white">Episodes</Heading>
+                <Box className="flex-row flex-wrap gap-2">
+                  {episodes.map((episode) => (
+                    <Box
+                      key={episode.mal_id}
+                      className="items-center justify-center bg-gray-800 rounded-lg aspect-square"
+                      style={{ width: episodeBoxWidth }}
+                    >
+                      <Text className="font-bold text-white">{episode.mal_id}</Text>
+                    </Box>
+                  ))}
                 </Box>
               </Box>
             )}
