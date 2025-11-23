@@ -18,7 +18,8 @@ interface Anime {
   };
   synopsis: string;
   trailer: {
-    youtube_id: string;
+    youtube_id: string | null;
+    embed_url: string | null;
   };
 }
 
@@ -47,6 +48,15 @@ const AnimeDetails = () => {
     fetchAnimeDetails();
   }, [id]);
 
+  const getVideoId = (trailer: Anime['trailer']) => {
+    if (trailer.youtube_id) return trailer.youtube_id;
+    if (trailer.embed_url) {
+      const match = trailer.embed_url.match(/\/embed\/([^?]+)/);
+      return match ? match[1] : null;
+    }
+    return null;
+  };
+
   if (loading) {
     return (
       <Box className="items-center justify-center flex-1 bg-background-0">
@@ -63,6 +73,8 @@ const AnimeDetails = () => {
     );
   }
 
+  const videoId = anime?.trailer ? getVideoId(anime.trailer) : null;
+
   return (
     <ScrollView className="flex-1 bg-background-0">
       <Stack.Screen options={{ title: anime?.title }} />
@@ -75,13 +87,13 @@ const AnimeDetails = () => {
             className="w-full mt-4 rounded-lg aspect-[2/3]"
           />
           <Text className="mt-4 text-white">{anime.synopsis}</Text>
-          {anime.trailer?.youtube_id && (
+          {videoId && (
             <Box className="mt-4">
               <Heading className="mb-2 text-xl text-white">Trailer</Heading>
               <YoutubePlayer
                 height={220}
                 play={false}
-                videoId={anime.trailer.youtube_id}
+                videoId={videoId}
               />
             </Box>
           )}

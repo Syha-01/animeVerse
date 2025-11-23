@@ -1,0 +1,19 @@
+meta {
+  name: airing top
+  type: http
+  seq: 1
+}
+
+get {
+  url: https://api.jikan.moe/v4/top/anime?filter=airing
+  body: none
+  auth: inherit
+}
+
+params:query {
+  filter: airing
+}
+
+settings {
+  encodeUrl: true
+}
