@@ -3,10 +3,13 @@ import { Heading } from '@/components/ui/heading';
 import { Image } from '@/components/ui/image';
 import { ScrollView } from '@/components/ui/scroll-view';
 import { Text } from '@/components/ui/text';
+import { useAuth } from '@/contexts/AuthContext';
+import { apiClient } from '@/utils/api';
+import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Dimensions, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Alert, Dimensions, TouchableOpacity } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 
 const { width, height } = Dimensions.get('window');
@@ -40,11 +43,13 @@ interface Episode {
 
 const AnimeDetails = () => {
   const { id } = useLocalSearchParams();
+  const { isAuthenticated, token, user } = useAuth();
   const [anime, setAnime] = useState<Anime | null>(null);
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchAnimeDetails = async () => {
@@ -80,6 +85,53 @@ const AnimeDetails = () => {
       return match ? match[1] : null;
     }
     return null;
+  };
+
+  const handleSaveAnime = async () => {
+    // Check if user is authenticated
+    if (!isAuthenticated || !token || !user) {
+      // Navigate to login with return path
+      router.push({
+        pathname: '/auth/login',
+        params: { returning_to: `/anime/${id}` },
+      });
+      return;
+    }
+
+    if (!anime) return;
+
+    setIsSaving(true);
+    try {
+      // Prepare anime data for API
+      const animeData = {
+        user_id: user.id,
+        anime_id: anime.mal_id,
+        status: 'Plan to Watch',
+        current_episode: 0,
+        anime: {
+          id: anime.mal_id,
+          title: anime.title,
+          synopsis: anime.synopsis || '',
+          cover_image_url: anime.images.jpg.large_image_url || anime.images.jpg.image_url,
+          total_episodes: 0, // Jikan doesn't always provide this in the same format
+          status: 'Unknown',
+          release_date: new Date().toISOString().split('T')[0],
+          rating: 'Not Rated',
+          score: anime.score || 0,
+          genres: anime.genres.map((g) => g.name),
+          studios: [],
+          broadcast_information: '',
+        },
+      };
+
+      await apiClient.saveAnimeToList(token, user.id, animeData);
+      Alert.alert('Success', 'Anime added to your list!');
+    } catch (err: any) {
+      console.error('Save error:', err);
+      Alert.alert('Error', err.message || 'Failed to save anime');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (loading) {
@@ -127,6 +179,33 @@ const AnimeDetails = () => {
                 ))}
               </Box>
             </Box>
+          </Box>
+
+          {/* Floating Save Button */}
+          <Box className="absolute bottom-4 right-4">
+            <TouchableOpacity
+              onPress={handleSaveAnime}
+              disabled={isSaving}
+              className="flex-row items-center px-6 py-3 rounded-full shadow-lg bg-primary-500"
+              style={{
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+                elevation: 5,
+              }}
+            >
+              {isSaving ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <>
+                  <MaterialIcons name="bookmark-add" size={24} color="white" />
+                  <Text className="ml-2 font-bold text-white">
+                    {isAuthenticated ? 'Save' : 'Login to Save'}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
           </Box>
 
           <Box className="px-4 mt-4">
