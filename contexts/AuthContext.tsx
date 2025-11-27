@@ -37,9 +37,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 AsyncStorage.getItem(USER_KEY),
             ]);
 
-            if (storedToken && storedUser) {
+            if (storedToken) {
                 setToken(storedToken);
-                setUser(JSON.parse(storedUser));
+
+                // Try to fetch the latest user data from the server
+                try {
+                    const { user: freshUser } = await apiClient.getUserProfile(storedToken);
+                    setUser(freshUser);
+                    await AsyncStorage.setItem(USER_KEY, JSON.stringify(freshUser));
+                } catch (err) {
+                    // If fetch fails (e.g. offline), fall back to stored user
+                    console.log('Failed to fetch fresh user profile, using stored data');
+                    if (storedUser) {
+                        setUser(JSON.parse(storedUser));
+                    }
+                }
             }
         } catch (error) {
             console.error('Failed to load stored auth:', error);
@@ -60,27 +72,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await AsyncStorage.setItem(TOKEN_KEY, authToken);
             setToken(authToken);
 
-            // Check if we have stored user data from previous registration/login
-            const storedUser = await AsyncStorage.getItem(USER_KEY);
-            if (storedUser) {
-                const parsedUser = JSON.parse(storedUser);
-                // Update the user with the same data (ensuring it's still in storage)
-                if (parsedUser.email === email) {
-                    setUser(parsedUser);
-                    return;
-                }
-            }
-
-            // If no stored user or email doesn't match, create a minimal user object
-            // The user will have been created during registration 
-            // In production, you'd fetch full user details from a GET /v1/users/me endpoint
-            const userObj: User = {
-                id: '', // Will be populated from registration or profile fetch
-                username: email.split('@')[0],
-                email: email,
-                activated: true,
-                created_at: new Date().toISOString(),
-            };
+            // Fetch full user profile
+            const { user: userObj } = await apiClient.getUserProfile(authToken);
 
             await AsyncStorage.setItem(USER_KEY, JSON.stringify(userObj));
             setUser(userObj);

@@ -42,7 +42,9 @@ export interface SaveAnimeRequest {
     status: string;
     current_episode?: number;
     score?: number;
-    anime: AnimeData;
+    started_watching_date?: string;
+    finished_watching_date?: string;
+    anime: Omit<AnimeData, 'id'>;
 }
 
 class ApiClient {
@@ -109,6 +111,15 @@ class ApiClient {
 
     async getUserAnimeList(token: string, userId: string): Promise<any> {
         return this.request(`/v1/user_anime_list?user_id=${userId}`, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+    }
+
+    async getUserProfile(token: string): Promise<{ user: User }> {
+        return this.request('/v1/users/me', {
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${token}`,

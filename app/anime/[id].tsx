@@ -11,12 +11,14 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, TouchableOpacity } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
+import SaveAnimeModal from '../../components/SaveAnimeModal';
 
 const { width, height } = Dimensions.get('window');
 
 interface Anime {
   mal_id: number;
   title: string;
+  title_english?: string;
   images: {
     jpg: {
       image_url: string;
@@ -29,10 +31,24 @@ interface Anime {
     embed_url: string | null;
   };
   genres: {
+    mal_id: number;
+    name: string;
+  }[];
+  studios: {
+    mal_id: number;
     name: string;
   }[];
   score: number;
   scored_by: number;
+  episodes: number | null;
+  status: string;
+  aired: {
+    from: string | null;
+  };
+  rating: string;
+  broadcast: {
+    string: string;
+  } | null;
 }
 
 interface Episode {
@@ -50,6 +66,7 @@ const AnimeDetails = () => {
   const [error, setError] = useState<Error | null>(null);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [showSaveModal, setShowSaveModal] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchAnimeDetails = async () => {
@@ -87,45 +104,48 @@ const AnimeDetails = () => {
     return null;
   };
 
-  const handleSaveAnime = async () => {
-    // Check if user is authenticated
+  const handleSaveAnime = () => {
     if (!isAuthenticated || !token || !user) {
-      // Navigate to login with return path
       router.push({
         pathname: '/auth/login',
         params: { returning_to: `/anime/${id}` },
       });
       return;
     }
+    setShowSaveModal(true);
+  };
 
-    if (!anime) return;
+  const handleSaveToList = async (formData: any) => {
+    if (!anime || !user || !token) return;
 
     setIsSaving(true);
     try {
-      // Prepare anime data for API
       const animeData = {
         user_id: user.id,
         anime_id: anime.mal_id,
-        status: 'Plan to Watch',
-        current_episode: 0,
+        status: formData.status,
+        current_episode: formData.current_episode,
+        score: formData.score,
+        started_watching_date: formData.started_watching_date,
+        finished_watching_date: formData.finished_watching_date,
         anime: {
-          id: anime.mal_id,
           title: anime.title,
           synopsis: anime.synopsis || '',
           cover_image_url: anime.images.jpg.large_image_url || anime.images.jpg.image_url,
-          total_episodes: 0, // Jikan doesn't always provide this in the same format
-          status: 'Unknown',
-          release_date: new Date().toISOString().split('T')[0],
-          rating: 'Not Rated',
+          total_episodes: anime.episodes || 0,
+          status: anime.status || 'Unknown',
+          release_date: anime.aired?.from ? anime.aired.from.split('T')[0] : new Date().toISOString().split('T')[0],
+          rating: anime.rating || 'Not Rated',
           score: anime.score || 0,
           genres: anime.genres.map((g) => g.name),
-          studios: [],
-          broadcast_information: '',
+          studios: anime.studios?.map((s) => s.name) || [],
+          broadcast_information: anime.broadcast?.string || '',
         },
       };
 
       await apiClient.saveAnimeToList(token, user.id, animeData);
       Alert.alert('Success', 'Anime added to your list!');
+      setShowSaveModal(false);
     } catch (err: any) {
       console.error('Save error:', err);
       Alert.alert('Error', err.message || 'Failed to save anime');
@@ -186,8 +206,9 @@ const AnimeDetails = () => {
             <TouchableOpacity
               onPress={handleSaveAnime}
               disabled={isSaving}
-              className="flex-row items-center px-6 py-3 rounded-full shadow-lg bg-primary-500"
+              className="flex-row items-center px-6 py-3 rounded-full shadow-lg"
               style={{
+                backgroundColor: '#38e07b',
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.25,
@@ -213,7 +234,7 @@ const AnimeDetails = () => {
               {isExpanded ? anime.synopsis : `${anime.synopsis?.slice(0, 150)}...`}
             </Text>
             <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)} className="mt-2">
-              <Text className="font-bold text-primary-500">{isExpanded ? 'Read Less' : 'Read More'}</Text>
+              <Text className="font-bold" style={{ color: '#38e07b' }}>{isExpanded ? 'Read Less' : 'Read More'}</Text>
             </TouchableOpacity>
 
             <Box className="mt-6">
@@ -258,6 +279,15 @@ const AnimeDetails = () => {
           </Box>
         </>
       )}
+
+      {/* Save Anime Modal */}
+      <SaveAnimeModal
+        visible={showSaveModal}
+        onClose={() => setShowSaveModal(false)}
+        onSave={handleSaveToList}
+        animeTitle={anime?.title || ''}
+        totalEpisodes={anime?.episodes || undefined}
+      />
     </ScrollView>
   );
 };
