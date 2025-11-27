@@ -8,7 +8,7 @@ import { router } from 'expo-router';
 import { Alert, Platform, Pressable, ScrollView } from 'react-native';
 
 export default function SettingsScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
 
   const handleLogout = async () => {
     // On web, Alert.alert doesn't work properly with async onPress
@@ -62,46 +62,76 @@ export default function SettingsScreen() {
         {/* Header */}
         <Heading className="mb-6 text-3xl text-white">Settings</Heading>
 
-        {/* User Profile Section */}
-        <Box className="p-4 mb-6 rounded-lg bg-gray-800">
-          <Box className="flex-row items-center mb-4">
-            <Box className="items-center justify-center w-16 h-16 mr-4 rounded-full bg-blue-500">
-              <Feather name="user" size={32} color="white" />
-            </Box>
-            <Box className="flex-1">
-              <Text className="text-xl font-bold text-white">{user?.username}</Text>
-              <Text className="text-sm text-gray-400">{user?.email}</Text>
-            </Box>
-          </Box>
+        {/* Conditional rendering based on authentication */}
+        {isAuthenticated && user ? (
+          <>
+            {/* User Profile Section */}
+            <Box className="p-4 mb-6 rounded-lg bg-gray-800">
+              <Box className="flex-row items-center mb-4">
+                <Box className="items-center justify-center w-16 h-16 mr-4 rounded-full bg-blue-500">
+                  <Feather name="user" size={32} color="white" />
+                </Box>
+                <Box className="flex-1">
+                  <Text className="text-xl font-bold text-white">{user.username}</Text>
+                  <Text className="text-sm text-gray-400">{user.email}</Text>
+                </Box>
+              </Box>
 
-          {/* User Details */}
-          <Box className="pt-4 mt-4 border-t border-gray-700">
-            <Box className="flex-row items-center mb-3">
-              <MaterialIcons name="verified" size={20} color={user?.activated ? '#10b981' : '#6b7280'} />
-              <Text className="ml-2 text-white">
-                Account Status:{' '}
-                <Text className={user?.activated ? 'text-green-500' : 'text-gray-400'}>
-                  {user?.activated ? 'Activated' : 'Pending Activation'}
+              {/* User Details */}
+              <Box className="pt-4 mt-4 border-t border-gray-700">
+                <Box className="flex-row items-center mb-3">
+                  <MaterialIcons name="verified" size={20} color={user.activated ? '#10b981' : '#6b7280'} />
+                  <Text className="ml-2 text-white">
+                    Account Status:{' '}
+                    <Text className={user.activated ? 'text-green-500' : 'text-gray-400'}>
+                      {user.activated ? 'Activated' : 'Pending Activation'}
+                    </Text>
+                  </Text>
+                </Box>
+                <Box className="flex-row items-center">
+                  <Feather name="calendar" size={20} color="#9ca3af" />
+                  <Text className="ml-2 text-gray-400">
+                    Joined: {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+                  </Text>
+                </Box>
+              </Box>
+            </Box>
+
+            {/* Logout Button */}
+            <Pressable
+              onPress={handleLogout}
+              className="flex-row items-center justify-center p-4 rounded-lg bg-red-600 active:bg-red-700"
+            >
+              <MaterialIcons name="logout" size={24} color="white" />
+              <Text className="ml-2 text-lg font-semibold text-white">Logout</Text>
+            </Pressable>
+          </>
+        ) : (
+          <>
+            {/* Not Authenticated - Show Login Button */}
+            <Box className="p-6 mb-6 rounded-lg bg-gray-800">
+              <Box className="items-center mb-4">
+                <Box className="items-center justify-center w-20 h-20 mb-4 rounded-full bg-gray-700">
+                  <Feather name="user" size={40} color="#9ca3af" />
+                </Box>
+                <Text className="text-xl font-bold text-white">Not Logged In</Text>
+                <Text className="mt-2 text-center text-gray-400">
+                  Login to save your favorite anime and track your watching progress
                 </Text>
-              </Text>
+              </Box>
             </Box>
-            <Box className="flex-row items-center">
-              <Feather name="calendar" size={20} color="#9ca3af" />
-              <Text className="ml-2 text-gray-400">
-                Joined: {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
-              </Text>
-            </Box>
-          </Box>
-        </Box>
 
-        {/* Logout Button */}
-        <Pressable
-          onPress={handleLogout}
-          className="flex-row items-center justify-center p-4 rounded-lg bg-red-600 active:bg-red-700"
-        >
-          <MaterialIcons name="logout" size={24} color="white" />
-          <Text className="ml-2 text-lg font-semibold text-white">Logout</Text>
-        </Pressable>
+            {/* Login Button */}
+            <Pressable
+              onPress={() => router.push('/auth/login')}
+              className="flex-row items-center justify-center p-4 rounded-lg"
+              style={{ backgroundColor: '#38e07b' }}
+            >
+              <MaterialIcons name="login" size={24} color="black" />
+              <Text className="ml-2 text-lg font-bold text-black">Login</Text>
+            </Pressable>
+          </>
+        )}
 
         {/* App Info Section */}
         <Box className="p-4 mt-6 rounded-lg bg-gray-800">
