@@ -5,31 +5,55 @@ import { useAuth } from '@/contexts/AuthContext';
 import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router } from 'expo-router';
-import { Alert, Pressable, ScrollView } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView } from 'react-native';
 
 export default function SettingsScreen() {
   const { user, logout } = useAuth();
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-            router.replace('/auth/login');
+  const handleLogout = async () => {
+    // On web, Alert.alert doesn't work properly with async onPress
+    // So we handle logout directly without the confirmation dialog
+    if (Platform.OS === 'web') {
+      try {
+        console.log('Logout button pressed (web), calling logout...');
+        await logout();
+        console.log('Logout completed (web), navigating to home...');
+        router.replace('/(tabs)');
+        console.log('Navigation called (web)');
+      } catch (error) {
+        console.error('Logout error (web):', error);
+        Alert.alert('Error', 'Failed to logout. Please try again.');
+      }
+    } else {
+      // On native platforms, show confirmation dialog
+      Alert.alert(
+        'Logout',
+        'Are you sure you want to logout?',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
           },
-        },
-      ],
-      { cancelable: true }
-    );
+          {
+            text: 'Logout',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                console.log('Logout button pressed, calling logout...');
+                await logout();
+                console.log('Logout completed, navigating to home...');
+                router.replace('/(tabs)');
+                console.log('Navigation called');
+              } catch (error) {
+                console.error('Logout error:', error);
+                Alert.alert('Error', 'Failed to logout. Please try again.');
+              }
+            },
+          },
+        ],
+        { cancelable: true }
+      );
+    }
   };
 
   return (

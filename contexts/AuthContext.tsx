@@ -109,14 +109,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const logout = async () => {
         try {
+            // Immediately clear state first to ensure UI updates
+            setToken(null);
+            setUser(null);
+
+            // Then clear AsyncStorage
             await Promise.all([
                 AsyncStorage.removeItem(TOKEN_KEY),
                 AsyncStorage.removeItem(USER_KEY),
             ]);
-            setToken(null);
-            setUser(null);
+
+            console.log('Logout successful - token and user cleared');
         } catch (error) {
             console.error('Failed to logout:', error);
+            throw error; // Re-throw to let caller handle
         }
     };
 
