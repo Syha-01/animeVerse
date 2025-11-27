@@ -126,6 +126,13 @@ class ApiClient {
             },
         });
     }
+
+    async activateUser(token: string): Promise<{ user: User }> {
+        return this.request('/v1/users/activated', {
+            method: 'PUT',
+            body: JSON.stringify({ token }),
+        });
+    }
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);

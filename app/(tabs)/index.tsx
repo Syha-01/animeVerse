@@ -14,7 +14,6 @@ import Feather from '@expo/vector-icons/Feather';
 import { Link } from 'expo-router';
 
 // Defines the TypeScript interface for an Anime object based on the Jikan API response.
-// This interface is updated to include the trailer information.
 interface Anime {
     mal_id: number;
     title: string;
