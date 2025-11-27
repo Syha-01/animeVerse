@@ -202,13 +202,15 @@ const AnimeDetails = () => {
           </Box>
 
           {/* Floating Save Button */}
-          <Box className="absolute bottom-4 right-4">
+          <Box className="absolute bottom-4 right-4" style={{ zIndex: 999 }}>
             <TouchableOpacity
               onPress={handleSaveAnime}
               disabled={isSaving}
               className="flex-row items-center px-6 py-3 rounded-full shadow-lg"
               style={{
-                backgroundColor: '#38e07b',
+                backgroundColor: '#000000',
+                borderWidth: 2,
+                borderColor: '#38e07b',
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.25,
@@ -217,11 +219,11 @@ const AnimeDetails = () => {
               }}
             >
               {isSaving ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size="small" color="#38e07b" />
               ) : (
                 <>
-                  <MaterialIcons name="bookmark-add" size={24} color="white" />
-                  <Text className="ml-2 font-bold text-white">
+                  <MaterialIcons name="bookmark-add" size={24} color="#38e07b" />
+                  <Text className="ml-2 font-bold" style={{ color: '#38e07b' }}>
                     {isAuthenticated ? 'Save' : 'Login to Save'}
                   </Text>
                 </>

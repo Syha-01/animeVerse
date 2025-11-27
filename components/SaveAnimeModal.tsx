@@ -102,16 +102,16 @@ export default function SaveAnimeModal({
             animationType="slide"
             onRequestClose={onClose}
         >
-            <Box className="items-center justify-center flex-1 bg-black/70">
-                <Box className="w-11/12 max-w-lg p-6 rounded-lg bg-background-900">
-                    <Heading className="mb-4 text-2xl text-white">
+            <Box className="items-center justify-center flex-1 bg-black/80">
+                <Box className="w-11/12 max-w-lg p-6 rounded-lg" style={{ backgroundColor: '#1a1a1a' }}>
+                    <Heading className="mb-6 text-2xl font-bold text-white">
                         Save "{animeTitle}"
                     </Heading>
 
                     <ScrollView className="max-h-96">
                         {/* Status Selection */}
-                        <Box className="mb-4">
-                            <Text className="mb-2 text-sm font-semibold text-gray-300">
+                        <Box className="mb-6">
+                            <Text className="mb-3 text-sm font-semibold text-white">
                                 Status *
                             </Text>
                             <Box className="flex-row flex-wrap gap-2">
@@ -119,14 +119,16 @@ export default function SaveAnimeModal({
                                     <TouchableOpacity
                                         key={option}
                                         onPress={() => setStatus(option)}
-                                        className={`px-4 py-2 rounded-full ${status === option ? '' : 'bg-gray-700'
-                                            }`}
-                                        style={status === option ? { backgroundColor: '#38e07b' } : {}}
+                                        className="px-4 py-2 rounded-full"
+                                        style={status === option
+                                            ? { backgroundColor: '#38e07b' }
+                                            : { backgroundColor: '#2a2a2a', borderWidth: 1, borderColor: '#404040' }
+                                        }
                                     >
                                         <Text
                                             className={`${status === option
-                                                ? 'text-white font-bold'
-                                                : 'text-gray-300'
+                                                ? 'text-black font-bold'
+                                                : 'text-gray-400'
                                                 }`}
                                         >
                                             {option}
@@ -137,11 +139,11 @@ export default function SaveAnimeModal({
                         </Box>
 
                         {/* Current Episode */}
-                        <Box className="mb-4">
-                            <Text className="mb-2 text-sm font-semibold text-gray-300">
+                        <Box className="mb-6">
+                            <Text className="mb-3 text-sm font-semibold text-white">
                                 Current Episode {totalEpisodes ? `(of ${totalEpisodes})` : ''}
                             </Text>
-                            <Input className="border-gray-700 bg-gray-800">
+                            <Input className="bg-[#2a2a2a] border-[#404040]" style={{ borderWidth: 1 }}>
                                 <InputField
                                     placeholder="0"
                                     value={currentEpisode}
@@ -154,11 +156,11 @@ export default function SaveAnimeModal({
                         </Box>
 
                         {/* Score */}
-                        <Box className="mb-4">
-                            <Text className="mb-2 text-sm font-semibold text-gray-300">
+                        <Box className="mb-6">
+                            <Text className="mb-3 text-sm font-semibold text-white">
                                 Your Score (1-10)
                             </Text>
-                            <Input className="border-gray-700 bg-gray-800">
+                            <Input className="bg-[#2a2a2a] border-[#404040]" style={{ borderWidth: 1 }}>
                                 <InputField
                                     placeholder="Optional"
                                     value={score?.toString() || ''}
@@ -171,11 +173,11 @@ export default function SaveAnimeModal({
                         </Box>
 
                         {/* Start Date */}
-                        <Box className="mb-4">
-                            <Text className="mb-2 text-sm font-semibold text-gray-300">
+                        <Box className="mb-6">
+                            <Text className="mb-3 text-sm font-semibold text-white">
                                 Started Watching (YYYY-MM-DD)
                             </Text>
-                            <Input className="border-gray-700 bg-gray-800">
+                            <Input className="bg-[#2a2a2a] border-[#404040]" style={{ borderWidth: 1 }}>
                                 <InputField
                                     placeholder="Optional (e.g., 2025-11-26)"
                                     value={startDate}
@@ -187,11 +189,11 @@ export default function SaveAnimeModal({
                         </Box>
 
                         {/* Finish Date */}
-                        <Box className="mb-4">
-                            <Text className="mb-2 text-sm font-semibold text-gray-300">
+                        <Box className="mb-6">
+                            <Text className="mb-3 text-sm font-semibold text-white">
                                 Finished Watching (YYYY-MM-DD)
                             </Text>
-                            <Input className="border-gray-700 bg-gray-800">
+                            <Input className="bg-[#2a2a2a] border-[#404040]" style={{ borderWidth: 1 }}>
                                 <InputField
                                     placeholder="Optional (e.g., 2025-11-26)"
                                     value={finishDate}
@@ -208,7 +210,8 @@ export default function SaveAnimeModal({
                         <TouchableOpacity
                             onPress={onClose}
                             disabled={isSaving}
-                            className="flex-1 p-4 rounded-lg bg-gray-700"
+                            className="flex-1 p-4 rounded-lg"
+                            style={{ backgroundColor: '#2a2a2a', borderWidth: 1, borderColor: '#404040' }}
                         >
                             <Text className="font-semibold text-center text-white">
                                 Cancel
@@ -218,12 +221,12 @@ export default function SaveAnimeModal({
                             onPress={handleSave}
                             disabled={isSaving}
                             className="flex-1 p-4 rounded-lg"
-                            style={{ backgroundColor: '#38e07b' }}
+                            style={{ backgroundColor: '#38e07b', borderWidth: 2, borderColor: '#38e07b' }}
                         >
                             {isSaving ? (
                                 <ActivityIndicator color="#fff" />
                             ) : (
-                                <Text className="font-semibold text-center text-white">
+                                <Text className="font-bold text-center text-black">
                                     Save to List
                                 </Text>
                             )}
