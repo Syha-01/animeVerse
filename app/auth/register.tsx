@@ -123,12 +123,12 @@ export default function RegisterScreen() {
                     <TouchableOpacity
                         onPress={handleRegister}
                         disabled={loading}
-                        className="p-4 mb-4 rounded-lg bg-primary-500"
+                        className="p-4 mb-4 rounded-lg bg-typography-black border-2 border-[#38e07b]"
                     >
                         {loading ? (
-                            <ActivityIndicator color="#fff" />
+                            <ActivityIndicator color="#38e07b" />
                         ) : (
-                            <Text className="font-semibold text-center text-white">Create Account</Text>
+                            <Text className="font-semibold text-center text-[#38e07b]">Create Account</Text>
                         )}
                     </TouchableOpacity>
 
