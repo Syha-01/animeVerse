@@ -118,6 +118,26 @@ class ApiClient {
         });
     }
 
+    async updateUserAnimeList(
+        token: string,
+        listId: string,
+        updateData: {
+            status?: string;
+            current_episode?: number;
+            score?: number;
+            started_watching_date?: string;
+            finished_watching_date?: string;
+        }
+    ): Promise<any> {
+        return this.request(`/v1/user_anime_list/${listId}`, {
+            method: 'PATCH',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(updateData),
+        });
+    }
+
     async getUserProfile(token: string): Promise<{ user: User }> {
         return this.request('/v1/users/me', {
             method: 'GET',

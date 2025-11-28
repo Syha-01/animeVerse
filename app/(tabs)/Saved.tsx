@@ -1,3 +1,4 @@
+import SaveAnimeModal, { SaveAnimeData } from '@/components/SaveAnimeModal';
 import { Box } from '@/components/ui/box';
 import { Heading } from '@/components/ui/heading';
 import { Image } from '@/components/ui/image';
@@ -5,9 +6,10 @@ import { ScrollView } from '@/components/ui/scroll-view';
 import { Text } from '@/components/ui/text';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiClient } from '@/utils/api';
+import { MaterialIcons } from '@expo/vector-icons';
 import { Link, router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, RefreshControl, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, RefreshControl, TouchableOpacity } from 'react-native';
 
 interface SavedAnime {
   id: string;
@@ -16,6 +18,7 @@ interface SavedAnime {
   current_episode: number;
   score: number | null;
   started_watching_date: string | null;
+  finished_watching_date: string | null;
   anime: {
     id: number;
     title: string;
@@ -32,6 +35,8 @@ export default function SavedScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedAnime, setSelectedAnime] = useState<SavedAnime | null>(null);
 
   const fetchSavedAnime = async () => {
     if (!isAuthenticated || !token || !user) {
@@ -59,6 +64,35 @@ export default function SavedScreen() {
   const onRefresh = () => {
     setRefreshing(true);
     fetchSavedAnime();
+  };
+
+  const handleEditAnime = (anime: SavedAnime) => {
+    setSelectedAnime(anime);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateAnime = async (formData: SaveAnimeData) => {
+    if (!selectedAnime || !token) return;
+
+    try {
+      await apiClient.updateUserAnimeList(token, selectedAnime.id, {
+        status: formData.status,
+        current_episode: formData.current_episode,
+        score: formData.score,
+        started_watching_date: formData.started_watching_date,
+        finished_watching_date: formData.finished_watching_date,
+      });
+
+      Alert.alert('Success', 'Anime updated successfully!');
+      setShowEditModal(false);
+      setSelectedAnime(null);
+
+      // Refresh the list
+      fetchSavedAnime();
+    } catch (err: any) {
+      console.error('Update error:', err);
+      Alert.alert('Error', err.message || 'Failed to update anime');
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -152,56 +186,102 @@ export default function SavedScreen() {
 
         <Box className="space-y-4">
           {savedAnime.map((item) => (
-            <Link href={`/anime/${item.anime_id}`} asChild key={item.id}>
-              <Pressable>
-                <Box className="flex-row p-3 mb-4 rounded-lg bg-gray-900">
-                  {/* Anime Cover */}
-                  <Image
-                    source={{ uri: item.anime.cover_image_url }}
-                    alt={item.anime.title}
-                    className="w-24 rounded-lg h-36"
-                  />
+            <Box key={item.id} className="relative flex-row p-3 mb-4 rounded-lg bg-gray-900">
+              {/* Edit Button */}
+              <TouchableOpacity
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleEditAnime(item);
+                }}
+                className="absolute z-10 p-2 rounded-full top-2 right-2 bg-gray-800/90"
+                style={{
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 3.84,
+                  elevation: 5,
+                }}
+              >
+                <MaterialIcons name="edit" size={20} color="#38e07b" />
+              </TouchableOpacity>
 
-                  {/* Anime Details */}
-                  <Box className="flex-1 ml-4">
-                    <Text className="mb-2 text-lg font-bold text-white" numberOfLines={2}>
-                      {item.anime.title}
-                    </Text>
+              <Link href={`/anime/${item.anime_id}`} asChild>
+                <Pressable className="flex-1">
+                  <Box className="flex-row">
+                    {/* Anime Cover */}
+                    <Image
+                      source={{ uri: item.anime.cover_image_url }}
+                      alt={item.anime.title}
+                      className="w-24 rounded-lg h-36"
+                    />
 
-                    {/* Status Badge */}
-                    <Box className={`self-start px-3 py-1 mb-2 rounded-full ${getStatusColor(item.status)}`}>
-                      <Text className="text-xs font-bold text-white">{item.status}</Text>
-                    </Box>
+                    {/* Anime Details */}
+                    <Box className="flex-1 ml-4">
+                      <Text className="mb-2 text-lg font-bold text-white" numberOfLines={2}>
+                        {item.anime.title}
+                      </Text>
 
-                    {/* Progress */}
-                    <Text className="mb-1 text-sm text-gray-400">
-                      Episode: {item.current_episode}
-                      {item.anime.total_episodes > 0 && ` / ${item.anime.total_episodes}`}
-                    </Text>
-
-                    {/* Score */}
-                    {item.score && (
-                      <Box className="flex-row items-center">
-                        <Text className="text-sm text-gray-400">Your Score: </Text>
-                        <Text className="text-sm font-bold text-yellow-400">
-                          {item.score}/10
-                        </Text>
+                      {/* Status Badge */}
+                      <Box className={`self-start px-3 py-1 mb-2 rounded-full ${getStatusColor(item.status)}`}>
+                        <Text className="text-xs font-bold text-white">{item.status}</Text>
                       </Box>
-                    )}
 
-                    {/* MAL Score */}
-                    <Text className="text-xs text-gray-500">
-                      MAL Score: {item.anime.score || 'N/A'}
-                    </Text>
+                      {/* Progress */}
+                      <Text className="mb-1 text-sm text-gray-400">
+                        Episode: {item.current_episode}
+                        {item.anime.total_episodes > 0 && ` / ${item.anime.total_episodes}`}
+                      </Text>
+
+                      {/* Score */}
+                      {item.score && (
+                        <Box className="flex-row items-center">
+                          <Text className="text-sm text-gray-400">Your Score: </Text>
+                          <Text className="text-sm font-bold text-yellow-400">
+                            {item.score}/10
+                          </Text>
+                        </Box>
+                      )}
+
+                      {/* MAL Score */}
+                      <Text className="text-xs text-gray-500">
+                        MAL Score: {item.anime.score || 'N/A'}
+                      </Text>
+                    </Box>
                   </Box>
-                </Box>
-              </Pressable>
-            </Link>
+                </Pressable>
+              </Link>
+            </Box>
           ))}
         </Box>
 
         <Box className="h-24" />
       </Box>
+
+      {/* Edit Modal */}
+      {selectedAnime && (
+        <SaveAnimeModal
+          visible={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedAnime(null);
+          }}
+          onSave={handleUpdateAnime}
+          animeTitle={selectedAnime.anime.title}
+          totalEpisodes={selectedAnime.anime.total_episodes}
+          mode="edit"
+          initialData={{
+            status: selectedAnime.status as SaveAnimeData['status'],
+            current_episode: selectedAnime.current_episode,
+            score: selectedAnime.score || undefined,
+            started_watching_date: selectedAnime.started_watching_date
+              ? new Date(selectedAnime.started_watching_date).toISOString().split('T')[0]
+              : undefined,
+            finished_watching_date: selectedAnime.finished_watching_date
+              ? new Date(selectedAnime.finished_watching_date).toISOString().split('T')[0]
+              : undefined,
+          }}
+        />
+      )}
     </ScrollView>
   );
 }

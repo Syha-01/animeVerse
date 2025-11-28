@@ -17,6 +17,8 @@ interface SaveAnimeModalProps {
     onSave: (data: SaveAnimeData) => Promise<void>;
     animeTitle: string;
     totalEpisodes?: number;
+    mode?: 'save' | 'edit';
+    initialData?: Partial<SaveAnimeData & { started_watching_date: string | null; finished_watching_date: string | null }>;
 }
 
 export interface SaveAnimeData {
@@ -35,15 +37,25 @@ export default function SaveAnimeModal({
     onSave,
     animeTitle,
     totalEpisodes,
+    mode = 'save',
+    initialData,
 }: SaveAnimeModalProps) {
     // Get today's date in YYYY-MM-DD format
     const today = new Date().toISOString().split('T')[0];
 
-    const [status, setStatus] = useState<SaveAnimeData['status']>('Watch later');
-    const [currentEpisode, setCurrentEpisode] = useState('0');
-    const [score, setScore] = useState<number | undefined>(undefined);
-    const [startDate, setStartDate] = useState(today); // Default to today
-    const [finishDate, setFinishDate] = useState('');
+    const [status, setStatus] = useState<SaveAnimeData['status']>(initialData?.status || 'Watch later');
+    const [currentEpisode, setCurrentEpisode] = useState(initialData?.current_episode?.toString() || '0');
+    const [score, setScore] = useState<number | undefined>(initialData?.score);
+    const [startDate, setStartDate] = useState(
+        initialData?.started_watching_date && initialData.started_watching_date !== '0001-01-01'
+            ? initialData.started_watching_date
+            : mode === 'save' ? today : ''
+    );
+    const [finishDate, setFinishDate] = useState(
+        initialData?.finished_watching_date && initialData.finished_watching_date !== '0001-01-01'
+            ? initialData.finished_watching_date
+            : ''
+    );
     const [isSaving, setIsSaving] = useState(false);
 
     const handleSave = async () => {
@@ -105,7 +117,7 @@ export default function SaveAnimeModal({
             <Box className="items-center justify-center flex-1 bg-black/80">
                 <Box className="w-11/12 max-w-lg p-6 rounded-lg" style={{ backgroundColor: '#1a1a1a' }}>
                     <Heading className="mb-6 text-2xl font-bold text-white">
-                        Save "{animeTitle}"
+                        {mode === 'edit' ? 'Edit' : 'Save'} "{animeTitle}"
                     </Heading>
 
                     <ScrollView className="max-h-96">
@@ -227,7 +239,7 @@ export default function SaveAnimeModal({
                                 <ActivityIndicator color="#fff" />
                             ) : (
                                 <Text className="font-bold text-center text-black">
-                                    Save to List
+                                    {mode === 'edit' ? 'Update' : 'Save to List'}
                                 </Text>
                             )}
                         </TouchableOpacity>
