@@ -138,6 +138,15 @@ class ApiClient {
         });
     }
 
+    async deleteUserAnimeList(token: string, listId: string): Promise<any> {
+        return this.request(`/v1/user_anime_list/${listId}`, {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+    }
+
     async getUserProfile(token: string): Promise<{ user: User }> {
         return this.request('/v1/users/me', {
             method: 'GET',

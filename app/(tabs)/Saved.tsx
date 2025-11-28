@@ -1,3 +1,4 @@
+import ConfirmDialog from '@/components/ConfirmDialog';
 import SaveAnimeModal, { SaveAnimeData } from '@/components/SaveAnimeModal';
 import { Box } from '@/components/ui/box';
 import { Heading } from '@/components/ui/heading';
@@ -37,6 +38,8 @@ export default function SavedScreen() {
   const [error, setError] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedAnime, setSelectedAnime] = useState<SavedAnime | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [animeToDelete, setAnimeToDelete] = useState<SavedAnime | null>(null);
 
   const fetchSavedAnime = async () => {
     if (!isAuthenticated || !token || !user) {
@@ -93,6 +96,31 @@ export default function SavedScreen() {
       console.error('Update error:', err);
       Alert.alert('Error', err.message || 'Failed to update anime');
     }
+  };
+
+  const handleDeleteAnime = (anime: SavedAnime) => {
+    setAnimeToDelete(anime);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!animeToDelete || !token) return;
+
+    try {
+      await apiClient.deleteUserAnimeList(token, animeToDelete.id);
+      Alert.alert('Success', 'Anime removed from your list!');
+      setShowDeleteConfirm(false);
+      setAnimeToDelete(null);
+      fetchSavedAnime(); // Refresh the list
+    } catch (err: any) {
+      console.error('Delete error:', err);
+      Alert.alert('Error', err.message || 'Failed to delete anime');
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setAnimeToDelete(null);
   };
 
   const getStatusColor = (status: string) => {
@@ -187,23 +215,44 @@ export default function SavedScreen() {
         <Box className="space-y-4">
           {savedAnime.map((item) => (
             <Box key={item.id} className="relative flex-row p-3 mb-4 rounded-lg bg-gray-900">
-              {/* Edit Button */}
-              <TouchableOpacity
-                onPress={(e) => {
-                  e.stopPropagation();
-                  handleEditAnime(item);
-                }}
-                className="absolute z-10 p-2 rounded-full top-2 right-2 bg-gray-800/90"
-                style={{
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.25,
-                  shadowRadius: 3.84,
-                  elevation: 5,
-                }}
-              >
-                <MaterialIcons name="edit" size={20} color="#38e07b" />
-              </TouchableOpacity>
+              {/* Action Buttons */}
+              <Box className="absolute z-10 flex-row gap-2 top-2 right-2">
+                {/* Edit Button */}
+                <TouchableOpacity
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    handleEditAnime(item);
+                  }}
+                  className="p-2 rounded-full bg-gray-800/90"
+                  style={{
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 3.84,
+                    elevation: 5,
+                  }}
+                >
+                  <MaterialIcons name="edit" size={20} color="#38e07b" />
+                </TouchableOpacity>
+
+                {/* Delete Button */}
+                <TouchableOpacity
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    handleDeleteAnime(item);
+                  }}
+                  className="p-2 rounded-full bg-gray-800/90"
+                  style={{
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 3.84,
+                    elevation: 5,
+                  }}
+                >
+                  <MaterialIcons name="delete" size={20} color="#ef4444" />
+                </TouchableOpacity>
+              </Box>
 
               <Link href={`/anime/${item.anime_id}`} asChild>
                 <Pressable className="flex-1">
@@ -282,6 +331,17 @@ export default function SavedScreen() {
           }}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        visible={showDeleteConfirm}
+        title="Delete Anime"
+        message={animeToDelete ? `Are you sure you want to remove "${animeToDelete.anime.title}" from your list?` : ''}
+        onCancel={cancelDelete}
+        onConfirm={confirmDelete}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </ScrollView>
   );
 }
